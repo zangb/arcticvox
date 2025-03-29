@@ -1,0 +1,245 @@
+{
+    "version": 9,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 30
+    },
+    "configurePresets": [
+        {
+            "name": "x64-gcc-release",
+            "displayName": "x64 GCC Release",
+            "description": "Optimized executable",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/gcc/release",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": {
+                    "type": "STRING",
+                    "value": "/usr/bin/gcc"
+                },
+                "CMAKE_CXX_COMPILER": {
+                    "type": "STRING",
+                    "value": "/usr/bin/g++"
+                },
+                "CMAKE_EXPORT_COMPILE_COMMANDS": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "CMAKE_COMPILE_COMMANDS": {
+                    "type": "STRING",
+                    "value": "${sourceDir}/build/gcc/release/compile_commands.json"
+                },
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "Release"
+                }
+            }
+        },
+        {
+            "name": "x64-gcc-debug",
+            "displayName": "x64 GCC Debug",
+            "description": "Debug executable",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/gcc/debug",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": {
+                    "type": "STRING",
+                    "value": "/usr/bin/gcc"
+                },
+                "CMAKE_CXX_COMPILER": {
+                    "type": "STRING",
+                    "value": "/usr/bin/g++"
+                },
+                "CMAKE_EXPORT_COMPILE_COMMANDS": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "CMAKE_COMPILE_COMMANDS": {
+                    "type": "STRING",
+                    "value": "${sourceDir}/build/gcc/debug/compile_commands.json"
+                },
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "Debug"
+                },
+                "CMAKE_CXX_FLAGS": {
+                    "type": "STRING",
+                    "value": "-g3 -O0"
+                }
+            }
+        },
+        {
+            "name": "x64-clang-release",
+            "displayName": "x64 Clang Release",
+            "description": "Optimized executable",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/clang/release",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": {
+                    "type": "STRING",
+                    "value": "/usr/bin/clang"
+                },
+                "CMAKE_CXX_COMPILER": {
+                    "type": "STRING",
+                    "value": "/usr/bin/clang++"
+                },
+                "CMAKE_EXPORT_COMPILE_COMMANDS": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "CMAKE_COMPILE_COMMANDS": {
+                    "type": "STRING",
+                    "value": "${sourceDir}/build/clang/release/compile_commands.json"
+                },
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "Release"
+                }
+            }
+        },
+        {
+            "name": "x64-clang-debug",
+            "displayName": "x64 Clang Debug",
+            "description": "Debug executable",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/clang/debug",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": {
+                    "type": "STRING",
+                    "value": "/usr/bin/clang"
+                },
+                "CMAKE_CXX_COMPILER": {
+                    "type": "STRING",
+                    "value": "/usr/bin/clang++"
+                },
+                "CMAKE_EXPORT_COMPILE_COMMANDS": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "CMAKE_COMPILE_COMMANDS": {
+                    "type": "STRING",
+                    "value": "${sourceDir}/build/clang/debug/compile_commands.json"
+                },
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "Debug"
+                },
+                "CMAKE_CXX_FLAGS": {
+                    "type": "STRING",
+                    "value": "-g3 -O0"
+                }
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "x64-gcc-release",
+            "displayName": "GCC release build",
+            "configurePreset": "x64-gcc-release"
+        },
+        {
+            "name": "x64-gcc-debug",
+            "displayName": "GCC debug build",
+            "configurePreset": "x64-gcc-debug"
+        },
+        {
+            "name": "x64-clang-release",
+            "displayName": "Clang release build",
+            "configurePreset": "x64-clang-release"
+        },
+        {
+            "name": "x64-clang-debug",
+            "displayName": "Clang debug build",
+            "configurePreset": "x64-clang-debug"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "x64-gcc-debug",
+            "displayName": "GCC unit-test",
+            "configurePreset": "x64-gcc-debug",
+            "output": {
+                "outputOnFailure": true,
+                "verbosity": "verbose"
+            },
+            "execution": {
+                "noTestsAction": "error",
+                "stopOnFailure": false
+            }
+        },
+        {
+            "name": "x64-clang-debug",
+            "displayName": "Clang unit-test",
+            "configurePreset": "x64-clang-debug",
+            "output": {
+                "outputOnFailure": true,
+                "verbosity": "verbose"
+            },
+            "execution": {
+                "noTestsAction": "error",
+                "stopOnFailure": false
+            }
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "x64-gcc-debug",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "x64-gcc-debug"
+                },
+                {
+                    "type": "build",
+                    "name": "x64-gcc-debug"
+                },
+                {
+                    "type": "test",
+                    "name": "x64-gcc-debug"
+                }
+            ]
+        },
+        {
+            "name": "x64-gcc-release",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "x64-gcc-release"
+                },
+                {
+                    "type": "build",
+                    "name": "x64-gcc-release"
+                }
+            ]
+        },
+        {
+            "name": "x64-clang-debug",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "x64-clang-debug"
+                },
+                {
+                    "type": "build",
+                    "name": "x64-clang-debug"
+                },
+                {
+                    "type": "test",
+                    "name": "x64-clang-debug"
+                }
+            ]
+        },
+        {
+            "name": "x64-clang-release",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "x64-clang-release"
+                },
+                {
+                    "type": "build",
+                    "name": "x64-clang-release"
+                }
+            ]
+        }
+    ]
+}
