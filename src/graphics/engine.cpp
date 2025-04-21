@@ -1,18 +1,18 @@
 #include <chrono>
-#include <string_view>
 
 #include <vulkan/vulkan_raii.hpp>
 
+#include "arcticvox/common/engine_configuration.hpp"
 #include "arcticvox/graphics/camera.hpp"
 #include "arcticvox/graphics/engine.hpp"
 #include "arcticvox/graphics/render_system.hpp"
+#include "arcticvox/graphics/window.hpp"
 
 namespace arcticvox::graphics {
 
-graphics_engine::graphics_engine(
-    const uint32_t width, const uint32_t height, std::string_view name) :
-    window_(width, height, name),
-    gpu_(name, 0, window_),
+graphics_engine::graphics_engine(engine_configuration& config, window& window) :
+    window_(window),
+    gpu_(config, window_),
     driver_(gpu_),
     renderer_(gpu_, driver_, window_, false),
     render_sys_(gpu_, driver_, renderer_.get_swapchain().render_pass()) { }

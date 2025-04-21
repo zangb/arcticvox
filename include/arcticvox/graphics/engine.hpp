@@ -1,9 +1,9 @@
 #ifndef ARCTICVOX_ENGINE_HPP
 #define ARCTICVOX_ENGINE_HPP
 
-#include <string_view>
 #include <vector>
 
+#include "arcticvox/common/engine_configuration.hpp"
 #include "arcticvox/components/gameobject.hpp"
 #include "arcticvox/graphics/camera.hpp"
 #include "arcticvox/graphics/driver.hpp"
@@ -12,9 +12,10 @@
 #include "arcticvox/graphics/window.hpp"
 
 namespace arcticvox::graphics {
+
 class graphics_engine {
   public:
-    graphics_engine(uint32_t width, uint32_t height, std::string_view name);
+    graphics_engine(engine_configuration& config, window& window);
 
     void run();
 
@@ -35,7 +36,7 @@ class graphics_engine {
     }
 
   private:
-    window window_;
+    window& window_;
     gpu gpu_;
     gpu_driver driver_;
     renderer renderer_;

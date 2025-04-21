@@ -35,7 +35,7 @@ set(GRAPHICS_SOURCE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/graphics/window.cpp")
 
 set(IO_SOURCE_FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/io/cursor.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/io/input.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/io/filesystem.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/io/model_builder.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/io/shaderloader.cpp")

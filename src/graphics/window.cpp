@@ -9,7 +9,7 @@
 #include <spdlog/spdlog.h>
 
 #include "arcticvox/graphics/window.hpp"
-#include "arcticvox/io/cursor.hpp"
+#include "arcticvox/io/input.hpp"
 
 namespace arcticvox::graphics {
 

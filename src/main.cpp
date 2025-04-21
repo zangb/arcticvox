@@ -3,11 +3,13 @@
 
 #include <spdlog/spdlog.h>
 
+#include "arcticvox/common/engine_configuration.hpp"
 #include "arcticvox/components/fps_camera_controller.hpp"
 #include "arcticvox/components/gameobject.hpp"
 #include "arcticvox/components/model.hpp"
 #include "arcticvox/graphics/camera.hpp"
 #include "arcticvox/graphics/engine.hpp"
+#include "arcticvox/graphics/window.hpp"
 
 std::vector<arcticvox::components::gameobject> load_gameobjects(
     arcticvox::graphics::gpu_driver& driver) {
@@ -32,13 +34,19 @@ std::vector<arcticvox::components::gameobject> load_gameobjects(
 }
 
 auto main(int argc, char** argv) -> int {
-    arcticvox::graphics::graphics_engine avox_engine {1280, 720, "Arctic Vox"};
-    arcticvox::graphics::camera camera {};
-    arcticvox::components::fps_camera_controller cam_controller {avox_engine.get_window()};
-    std::vector<arcticvox::components::gameobject> render_objects =
-        load_gameobjects(avox_engine.get_gpu_driver());
-    camera.set_view_direction(glm::vec3(0.0f), glm::vec3(0.f, 0.0f, 1.f));
+    engine_configuration config {.app_name = "holovox",
+                                 .app_version = 0U,
+                                 .validation_layers = {"VK_LAYER_KHRONOS_validation"},
+                                 .device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME}};
+
     try {
+        arcticvox::graphics::window window {1280, 720U, "Arctic Vox"};
+        arcticvox::graphics::graphics_engine avox_engine {config, window};
+        arcticvox::graphics::camera camera {};
+        arcticvox::components::fps_camera_controller cam_controller {avox_engine.get_window()};
+        std::vector<arcticvox::components::gameobject> render_objects =
+            load_gameobjects(avox_engine.get_gpu_driver());
+        camera.set_view_direction(glm::vec3(0.0f), glm::vec3(0.f, 0.0f, 1.f));
         camera.set_camera_controller(cam_controller);
         avox_engine.set_camera(camera);
         avox_engine.set_objects_to_render(render_objects);

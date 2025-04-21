@@ -13,6 +13,7 @@
 #include <vulkan/vulkan_handles.hpp>
 #include <vulkan/vulkan_structs.hpp>
 
+#include "arcticvox/common/engine_configuration.hpp"
 #include "arcticvox/graphics/window.hpp"
 
 namespace arcticvox::graphics {
@@ -47,11 +48,9 @@ class gpu {
     /**
      * @brief Constructs the graphics device
      *
-     * @param name      The name of the application
-     * @param version   The version of the application
      * @param window    The window wrapping the GLFW instance
      */
-    gpu(const std::string_view name, const uint32_t version, window& window);
+    gpu(engine_configuration& config, window& window);
 
     gpu(const gpu& other) = delete;
     gpu(gpu&& other) = delete;
@@ -111,10 +110,6 @@ class gpu {
                                                    vk::ImageTiling tiling,
                                                    vk::FormatFeatureFlags features) const;
 
-    [[nodiscard]] auto device_extensions() -> const std::vector<const char*>& {
-        return device_extensions_;
-    }
-
     [[nodiscard]] auto physical_device() -> vk::raii::PhysicalDevice& {
         return physical_device_;
     }
@@ -123,8 +118,8 @@ class gpu {
         return surface_;
     }
 
-    [[nodiscard]] auto validation_layers() -> const std::vector<const char*>& {
-        return validation_layers_;
+    [[nodiscard]] auto get_engine_configuration() -> engine_configuration& {
+        return config_;
     }
 
   private:
@@ -161,15 +156,13 @@ class gpu {
     [[nodiscard]] swapchain_support_details query_swapchain_support(
         vk::raii::PhysicalDevice& device);
 
-    const std::vector<const char*> validation_layers_ {
-        "VK_LAYER_KHRONOS_validation"};    //!< The validation layers to enable
-    const std::vector<const char*> device_extensions_ {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+    engine_configuration& config_;
 
-    window& window_;                       //!< Handle to the window class wrapping the GLFW window
+    window& window_;                  //!< Handle to the window class wrapping the GLFW window
 
-    vk::raii::Context ctx_;                //!< The vulkan context
-    vk::ApplicationInfo app_info_;         //!< The vulkan application information
-    vk::raii::Instance instance_;          //!< The vulkan instance object
+    vk::raii::Context ctx_;           //!< The vulkan context
+    vk::ApplicationInfo app_info_;    //!< The vulkan application information
+    vk::raii::Instance instance_;     //!< The vulkan instance object
 
     vk::raii::DebugUtilsMessengerEXT debug_messenger_;    //!< Handles debug information, e.g. from
                                                           //!< the validation layers

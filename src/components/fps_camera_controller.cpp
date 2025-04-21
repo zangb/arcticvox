@@ -7,7 +7,7 @@
 
 #include "arcticvox/components/fps_camera_controller.hpp"
 #include "arcticvox/graphics/camera.hpp"
-#include "arcticvox/io/cursor.hpp"
+#include "arcticvox/io/input.hpp"
 
 namespace arcticvox::components {
 
@@ -20,11 +20,10 @@ void fps_camera_controller::update(graphics::camera& cam, const std::chrono::mic
     io::cursor& cursor = window_.get_cursor();
 
     if(glfwGetMouseButton(window_.get_glfw_window_instance(), 1U) == GLFW_PRESS) {
-        io::cursor_delta delta = cursor.get_cursor_delta();
+        glm::vec2 delta = cursor.get_cursor_delta();
         delta_rot = glm::vec3 {-delta.y * sensitivity_,    // pitch
                                delta.x * sensitivity_,     // yaw
                                0.0f};
-        spdlog::info("Cursor x delta {} y delta {}", delta.x, delta.y);
     }
 
     if(glfwGetKey(window_.get_glfw_window_instance(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {

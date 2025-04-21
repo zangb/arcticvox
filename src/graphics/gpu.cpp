@@ -16,6 +16,7 @@
 
 #include <spdlog/spdlog.h>
 
+#include "arcticvox/common/engine_configuration.hpp"
 #include "arcticvox/graphics/gpu.hpp"
 #include "arcticvox/graphics/window.hpp"
 
@@ -90,13 +91,14 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_message_cb(
     return false;
 }
 
-gpu::gpu(const std::string_view name, const uint32_t version, window& window) :
+gpu::gpu(engine_configuration& config, window& window) :
+    config_(config),
     window_(window),
     ctx_(),
-    app_info_(vk::ApplicationInfo {.pApplicationName = name.data(),
-                                   .applicationVersion = version,
-                                   .pEngineName = "Arctic Vox",
-                                   .engineVersion = 0U,
+    app_info_(vk::ApplicationInfo {.pApplicationName = config.app_name,
+                                   .applicationVersion = config.app_version,
+                                   .pEngineName = engine_configuration::engine_name,
+                                   .engineVersion = engine_configuration::engine_version,
                                    .apiVersion = ctx_.enumerateInstanceVersion()}),
     instance_(create_instance()),
     debug_messenger_(create_debug_utils_messenger()),
@@ -107,7 +109,7 @@ vk::raii::Instance gpu::create_instance() {
     const std::vector<vk::LayerProperties> instance_layer_props =
         ctx_.enumerateInstanceLayerProperties();
 
-    if(!check_validation_layer_support(validation_layers_, instance_layer_props))
+    if(!check_validation_layer_support(config_.validation_layers, instance_layer_props))
         throw std::runtime_error("Validation layers requested but not available!");
 
     std::vector<const char*> required_extensions = window_.get_required_glfw_extensions();
@@ -120,8 +122,8 @@ vk::raii::Instance gpu::create_instance() {
     vk::InstanceCreateInfo instance_create_info {
         .flags = {},
         .pApplicationInfo = &app_info_,
-        .enabledLayerCount = static_cast<uint32_t>(validation_layers_.size()),
-        .ppEnabledLayerNames = validation_layers_.data(),
+        .enabledLayerCount = static_cast<uint32_t>(config_.validation_layers.size()),
+        .ppEnabledLayerNames = config_.validation_layers.data(),
         .enabledExtensionCount = static_cast<uint32_t>(required_extensions.size()),
         .ppEnabledExtensionNames = required_extensions.data()};
 
@@ -159,7 +161,7 @@ vk::raii::PhysicalDevice gpu::create_physical_device() {
         throw std::runtime_error("Failed to find GPUs with Vulkan support!");
 
     for(const vk::raii::PhysicalDevice& phy_device: phy_devices) {
-        if(check_gpu_suitability(phy_device, device_extensions_)) {
+        if(check_gpu_suitability(phy_device, config_.device_extensions)) {
             spdlog::info("Using GPU: {}", phy_device.getProperties().deviceName.data());
             return vk::raii::PhysicalDevice {instance_, *phy_device};
         }

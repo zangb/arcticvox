@@ -8,6 +8,7 @@
 
 #include <vulkan/vulkan_structs.hpp>
 
+#include "arcticvox/common/engine_configuration.hpp"
 #include "arcticvox/graphics/driver.hpp"
 #include "arcticvox/graphics/gpu.hpp"
 
@@ -83,8 +84,7 @@ auto gpu_driver::create_device() -> vk::raii::Device {
                                        .pQueuePriorities = &queue_priority});
     });
 
-    const std::vector<const char*> validation_layers = gpu_.validation_layers();
-    const std::vector<const char*> device_extensions = gpu_.device_extensions();
+    engine_configuration& config = gpu_.get_engine_configuration();
 
     vk::PhysicalDeviceFeatures features {};
     features.samplerAnisotropy = true;
@@ -93,10 +93,10 @@ auto gpu_driver::create_device() -> vk::raii::Device {
         .flags = {},
         .queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size()),
         .pQueueCreateInfos = queue_create_infos.data(),
-        .enabledLayerCount = static_cast<uint32_t>(validation_layers.size()),
-        .ppEnabledLayerNames = validation_layers.data(),
-        .enabledExtensionCount = static_cast<uint32_t>(device_extensions.size()),
-        .ppEnabledExtensionNames = device_extensions.data(),
+        .enabledLayerCount = static_cast<uint32_t>(config.validation_layers.size()),
+        .ppEnabledLayerNames = config.validation_layers.data(),
+        .enabledExtensionCount = static_cast<uint32_t>(config.device_extensions.size()),
+        .ppEnabledExtensionNames = config.device_extensions.data(),
         .pEnabledFeatures = &features};
 
     return vk::raii::Device(gpu_.physical_device(), device_create_info);

@@ -2,6 +2,8 @@
 #define ARCTICVOX_CURSOR_HPP
 
 #include <GLFW/glfw3.h>
+#include <glm/ext/vector_float2.hpp>
+#include <glm/vec2.hpp>
 
 namespace arcticvox::io {
 enum class cursor_mode {
@@ -19,10 +21,6 @@ enum class cursor_mode {
  * @brief Describes the delta of the cursor on the screen
  *
  */
-struct cursor_delta {
-    double x;    //!< the delta in the x direction
-    double y;    //!< the delta in the y direction
-};
 
 class cursor {
   public:
@@ -47,7 +45,7 @@ class cursor {
      *
      * @return The cursor delta from the current position to the previous one
      */
-    [[nodiscard]] cursor_delta get_cursor_delta() const;
+    [[nodiscard]] glm::vec2 get_cursor_delta() const;
     /**
      * @brief Sets the new cursor mode
      *
@@ -58,10 +56,9 @@ class cursor {
     /**
      * @brief Updates the internally stored cursor position
      *
-     * @param x The cursor's new x position
-     * @param y The cursor's new y position
+     * @param pos The cursor's new position
      */
-    void update_position(double x, double y);
+    void update_position(glm::vec2 pos);
 
   private:
     /**
@@ -73,13 +70,10 @@ class cursor {
      */
     static void cursor_position_cb(GLFWwindow* window, double x_pos, double y_pos);
 
-    GLFWwindow* glfw_;           //!< Handle to the glfw window the cursor is attached to
+    GLFWwindow* glfw_;               //!< Handle to the glfw window the cursor is attached to
 
-    double prev_x_pos_ = 0.0;    //!< The cursor's last x position
-    double prev_y_pos_ = 0.0;    //!< The cursor's last y position
-
-    double x_pos_ = 0.0;         //!< The cursor's most recent x position
-    double y_pos_ = 0.0;         //!< The cursor's most recent y position
+    glm::vec2 previous_position_;    //!< The cursor's last position
+    glm::vec2 current_position_;     //!< The cursor's most recent position
 };
 
 }

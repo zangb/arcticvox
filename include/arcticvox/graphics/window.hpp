@@ -12,7 +12,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "arcticvox/io/cursor.hpp"
+#include "arcticvox/io/input.hpp"
 
 namespace arcticvox::graphics {
 
