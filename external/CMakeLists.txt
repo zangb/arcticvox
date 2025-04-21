@@ -1,3 +1,8 @@
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "Enable build of Assimp test suite")
+set(ASSIMP_INSTALL OFF CACHE BOOL "Enable installation of Assimp")
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build Assimp with shared libs")
+
+add_subdirectory(assimp)
 add_subdirectory(entt)
 add_subdirectory(spdlog)
 

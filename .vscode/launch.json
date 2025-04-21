@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "x64-clang-debug",
+            "program": "${workspaceFolder}/build/clang/debug/arcticvox",
+            "stopOnEntry": true
+        },
+        {
+            "type": "gdb",
+            "request": "launch",
+            "name": "x64-gcc-debug",
+            "program": "${workspaceFolder}/build/gcc/debug/arcticvox",
+            "stopOnEntry": true
+        }
+    ]
+}

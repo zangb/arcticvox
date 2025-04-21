@@ -5,12 +5,12 @@
 
 namespace arcticvox::io {
 enum class cursor_mode {
-    normal = GLFW_CURSOR_NORMAL,        //!< cursor is visible and works as expected
-    hidden = GLFW_CURSOR_HIDDEN,        //!< cursor is hidden when it is over a window
-    captured = GLFW_CURSOR_CAPTURED,    //!< cursor is visible but confined to content area of
-                                        //!< the window
-    disabled =
-        GLFW_CURSOR_DISABLED,    //!< cursor is hidden and unlimited, useful for camera controls
+    normal = GLFW_CURSOR_NORMAL,             //!< cursor is visible and works as expected
+    hidden = GLFW_CURSOR_HIDDEN,             //!< cursor is hidden when it is over a window
+    captured = GLFW_CURSOR_CAPTURED,         //!< cursor is visible but confined to content area of
+                                             //!< the window
+    disabled = GLFW_CURSOR_DISABLED,         //!< cursor is hidden and unlimited, useful for camera
+                                             //!< controls
     unavailable = GLFW_CURSOR_UNAVAILABLE    //!< cursor is not available
 };
 
@@ -53,7 +53,7 @@ class cursor {
      *
      * @param mode The cursor mode to use
      */
-    void set_cursor_mode(const cursor_mode mode);
+    void set_cursor_mode(cursor_mode mode);
 
     /**
      * @brief Updates the internally stored cursor position
@@ -73,13 +73,13 @@ class cursor {
      */
     static void cursor_position_cb(GLFWwindow* window, double x_pos, double y_pos);
 
+    GLFWwindow* glfw_;           //!< Handle to the glfw window the cursor is attached to
+
     double prev_x_pos_ = 0.0;    //!< The cursor's last x position
     double prev_y_pos_ = 0.0;    //!< The cursor's last y position
 
-    double x_pos_ = 0.0;    //!< The cursor's most recent x position
-    double y_pos_ = 0.0;    //!< The cursor's most recent y position
-
-    GLFWwindow* glfw_;    //!< Handle to the glfw window the cursor is attached to
+    double x_pos_ = 0.0;         //!< The cursor's most recent x position
+    double y_pos_ = 0.0;         //!< The cursor's most recent y position
 };
 
 }

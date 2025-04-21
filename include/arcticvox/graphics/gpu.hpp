@@ -42,7 +42,7 @@ struct queue_family_indices {
     }
 };
 
-class graphics_device {
+class gpu {
   public:
     /**
      * @brief Constructs the graphics device
@@ -51,25 +51,81 @@ class graphics_device {
      * @param version   The version of the application
      * @param window    The window wrapping the GLFW instance
      */
-    graphics_device(const std::string_view name, const uint32_t version, window& window);
+    gpu(const std::string_view name, const uint32_t version, window& window);
 
-    graphics_device(const graphics_device& other) = delete;
-    graphics_device(graphics_device&& other) = delete;
+    gpu(const gpu& other) = delete;
+    gpu(gpu&& other) = delete;
 
-    graphics_device& operator=(const graphics_device& other) = delete;
-    graphics_device& operator=(graphics_device&& other) = delete;
+    gpu& operator=(const gpu& other) = delete;
+    gpu& operator=(gpu&& other) = delete;
 
-    ~graphics_device() = default;
+    ~gpu() = default;
 
     /**
      * @brief Gets the swapchain information for a provided surface and device
      *
-     * @param device The physical device to query
-     * @param surface The surface of the physical device
      * @return The swapchain support details belonging to the device and surface
      */
-    [[nodiscard]] static swapchain_support_details query_swapchain_support(
-        const vk::PhysicalDevice& device, const vk::SurfaceKHR& surface);
+    [[nodiscard]] swapchain_support_details query_swapchain_support();
+
+    /**
+     * @brief Checks if the provided extensions are supported by vulkan
+     *
+     * @param extensions The extensions for which to check the support
+     * @param available_extensions The extensions provided by the vulkan instance
+     * @return  True if all extensions are supported
+     */
+    [[nodiscard]] static bool check_extension_support(
+        const std::vector<const char*>& extensions,
+        const std::vector<vk::ExtensionProperties>& available_extensions);
+
+    /**
+     * @brief Checks whether the physical device supports the required extensions, features,
+     * swapchain capabilities and queues
+     *
+     * @param device The device to check for suitability
+     * @param extensions The extensions to check for
+     * @return True if the device is suitable
+     */
+    [[nodiscard]] bool check_gpu_suitability(vk::raii::PhysicalDevice device,
+                                             const std::vector<const char*>& extensions);
+
+    /**
+     * @brief Checks whether the provided layers are supported by the available layer properties of
+     * the instance
+     *
+     * @param layers_to_check The validation layers that need to be checked
+     * @param available_layer_props The available layer properties of the current vulkan instance
+     * @return True if all provided layers are supported
+     */
+    [[nodiscard]] static bool check_validation_layer_support(
+        const std::vector<const char*>& layers_to_check,
+        const std::vector<vk::LayerProperties>& available_layer_props);
+
+    [[nodiscard]] queue_family_indices find_queue_families();
+
+    [[nodiscard]] uint32_t find_memory_type(const uint32_t type_filter,
+                                            const vk::MemoryPropertyFlags properties);
+
+    [[nodiscard]] vk::Format find_supported_format(const std::vector<vk::Format>& candidates,
+                                                   vk::ImageTiling tiling,
+                                                   vk::FormatFeatureFlags features) const;
+
+    [[nodiscard]] auto device_extensions() -> const std::vector<const char*>& {
+        return device_extensions_;
+    }
+
+    [[nodiscard]] auto physical_device() -> vk::raii::PhysicalDevice& {
+        return physical_device_;
+    }
+
+    [[nodiscard]] auto surface() -> vk::raii::SurfaceKHR& {
+        return surface_;
+    }
+
+    [[nodiscard]] auto validation_layers() -> const std::vector<const char*>& {
+        return validation_layers_;
+    }
 
   private:
     /**
@@ -93,50 +149,18 @@ class graphics_device {
     vk::raii::SurfaceKHR create_surface();
 
     /**
-     * @brief Checks if the provided extensions are supported by vulkan
-     *
-     * @param extensions The extensions for which to check the support
-     * @param available_extensions The extensions provided by the vulkan instance
-     * @return  True if all extensions are supported
-     */
-    [[nodiscard]] static bool check_extension_support(
-        const std::vector<const char*>& extensions,
-        const std::vector<vk::ExtensionProperties>& available_extensions);
-
-    /**
-     * @brief Checks whether the physical device supports the required extensions, features,
-     * swapchain capabilities and queues
-     *
-     * @param phy_device The physical device to check
-     * @param surface The surface of the device
-     * @param extensions The extensions to check for
-     * @return True if the device is suitable
-     */
-    [[nodiscard]] static bool check_gpu_suitability(const vk::PhysicalDevice& phy_device,
-                                                    const vk::SurfaceKHR& surface,
-                                                    const std::vector<const char*>& extensions);
-
-    /**
-     * @brief Checks whether the provided layers are supported by the available layer properties of
-     * the instance
-     *
-     * @param layers_to_check The validation layers that need to be checked
-     * @param available_layer_props The available layer properties of the current vulkan instance
-     * @return True if all provided layers are supported
-     */
-    [[nodiscard]] static bool check_validation_layer_support(
-        const std::vector<const char*>& layers_to_check,
-        const std::vector<vk::LayerProperties>& available_layer_props);
-
-    /**
      * @brief Tries to find a set of queues that support presentation and graphics operations
      *
      * @param device The physical device on which to query the queues
      * @param surface The surface of the physical device to use for querying
      * @return The set of indices
      */
-    [[nodiscard]] static queue_family_indices find_queue_families(const vk::PhysicalDevice& device,
-                                                                  const vk::SurfaceKHR& surface);
+    [[nodiscard]] queue_family_indices find_queue_families(vk::raii::PhysicalDevice& device,
+                                                           vk::raii::SurfaceKHR& surface);
+
+    [[nodiscard]] swapchain_support_details query_swapchain_support(
+        vk::raii::PhysicalDevice& device);
+
     const std::vector<const char*> validation_layers_ {
         "VK_LAYER_KHRONOS_validation"};    //!< The validation layers to enable
     const std::vector<const char*> device_extensions_ {VK_KHR_SWAPCHAIN_EXTENSION_NAME};

@@ -85,6 +85,14 @@ class window final {
 
   private:
     /**
+     * @brief GLFW callback for glfw specific errors
+     *
+     * @param error_code    The GLFW error code
+     * @param description   The description associated with the error code
+     */
+    static void glfw_error_cb(int error_code, const char* description);
+
+    /**
      * @brief GLFW callback function called when the framebuffer / window is being resized
      *
      * @param window The window instance

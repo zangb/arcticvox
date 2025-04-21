@@ -16,7 +16,7 @@
 
 #include <spdlog/spdlog.h>
 
-#include "arcticvox/graphics/graphics_device.hpp"
+#include "arcticvox/graphics/gpu.hpp"
 #include "arcticvox/graphics/window.hpp"
 
 namespace arcticvox::graphics {
@@ -90,8 +90,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_message_cb(
     return false;
 }
 
-graphics_device::graphics_device(
-    const std::string_view name, const uint32_t version, window& window) :
+gpu::gpu(const std::string_view name, const uint32_t version, window& window) :
     window_(window),
     ctx_(),
     app_info_(vk::ApplicationInfo {.pApplicationName = name.data(),
@@ -104,7 +103,7 @@ graphics_device::graphics_device(
     surface_(create_surface()),
     physical_device_(create_physical_device()) { }
 
-vk::raii::Instance graphics_device::create_instance() {
+vk::raii::Instance gpu::create_instance() {
     const std::vector<vk::LayerProperties> instance_layer_props =
         ctx_.enumerateInstanceLayerProperties();
 
@@ -129,7 +128,7 @@ vk::raii::Instance graphics_device::create_instance() {
     return vk::raii::Instance {ctx_, instance_create_info};
 }
 
-vk::raii::DebugUtilsMessengerEXT graphics_device::create_debug_utils_messenger() {
+vk::raii::DebugUtilsMessengerEXT gpu::create_debug_utils_messenger() {
     vk::DebugUtilsMessageSeverityFlagsEXT severity_flags {
         vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
         | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError};
@@ -147,20 +146,20 @@ vk::raii::DebugUtilsMessengerEXT graphics_device::create_debug_utils_messenger()
     return vk::raii::DebugUtilsMessengerEXT {instance_, debug_utils_messenger_info};
 }
 
-vk::raii::SurfaceKHR graphics_device::create_surface() {
+vk::raii::SurfaceKHR gpu::create_surface() {
     VkSurfaceKHR surface {};
     window_.create_window_surface(*instance_, surface);
     return vk::raii::SurfaceKHR {instance_, surface};
 }
 
-vk::raii::PhysicalDevice graphics_device::create_physical_device() {
+vk::raii::PhysicalDevice gpu::create_physical_device() {
     vk::raii::PhysicalDevices phy_devices {instance_};
 
     if(phy_devices.size() == 0U)
         throw std::runtime_error("Failed to find GPUs with Vulkan support!");
 
     for(const vk::raii::PhysicalDevice& phy_device: phy_devices) {
-        if(check_gpu_suitability(*phy_device, *surface_, device_extensions_)) {
+        if(check_gpu_suitability(phy_device, device_extensions_)) {
             spdlog::info("Using GPU: {}", phy_device.getProperties().deviceName.data());
             return vk::raii::PhysicalDevice {instance_, *phy_device};
         }
@@ -168,7 +167,7 @@ vk::raii::PhysicalDevice graphics_device::create_physical_device() {
     throw std::runtime_error("No suitable GPU found!");
 }
 
-bool graphics_device::check_extension_support(
+bool gpu::check_extension_support(
     const std::vector<const char*>& extensions,
     const std::vector<vk::ExtensionProperties>& available_extensions) {
     // compare each required extension with all available extensions and return the total result
@@ -189,17 +188,16 @@ bool graphics_device::check_extension_support(
                        });
 }
 
-bool graphics_device::check_gpu_suitability(const vk::PhysicalDevice& device,
-                                            const vk::SurfaceKHR& surface,
-                                            const std::vector<const char*>& extensions) {
+bool gpu::check_gpu_suitability(vk::raii::PhysicalDevice device,
+                                const std::vector<const char*>& extensions) {
     const bool extension_supported =
         check_extension_support(extensions, device.enumerateDeviceExtensionProperties());
 
-    const queue_family_indices indices = find_queue_families(device, surface);
+    const queue_family_indices indices = find_queue_families(device, surface_);
 
     bool swapchain_adequate = false;
     if(extension_supported) {
-        const swapchain_support_details details = query_swapchain_support(device, surface);
+        const swapchain_support_details details = query_swapchain_support(device);
         swapchain_adequate = !details.surface_formats.empty() && !details.present_modes.empty();
     }
 
@@ -207,7 +205,7 @@ bool graphics_device::check_gpu_suitability(const vk::PhysicalDevice& device,
            && swapchain_adequate;
 }
 
-bool graphics_device::check_validation_layer_support(
+bool gpu::check_validation_layer_support(
     const std::vector<const char*>& layers_to_check,
     const std::vector<vk::LayerProperties>& available_layer_props) {
     return std::all_of(layers_to_check.cbegin(),
@@ -227,8 +225,25 @@ bool graphics_device::check_validation_layer_support(
                        });
 }
 
-queue_family_indices graphics_device::find_queue_families(const vk::PhysicalDevice& device,
-                                                          const vk::SurfaceKHR& surface) {
+uint32_t gpu::find_memory_type(const uint32_t type_filter,
+                               const vk::MemoryPropertyFlags properties) {
+    vk::PhysicalDeviceMemoryProperties memory_properties = physical_device_.getMemoryProperties();
+
+    for(uint32_t i = 0; i < memory_properties.memoryTypeCount; ++i) {
+        if((type_filter & (1U << i))
+           && (memory_properties.memoryTypes[i].propertyFlags & properties) == properties)
+            return i;
+    }
+
+    throw std::runtime_error("Failed to find suitable memory type");
+}
+
+queue_family_indices gpu::find_queue_families() {
+    return find_queue_families(physical_device_, surface_);
+}
+
+queue_family_indices gpu::find_queue_families(vk::raii::PhysicalDevice& device,
+                                              vk::raii::SurfaceKHR& surface) {
     std::vector<vk::QueueFamilyProperties> queue_families = device.getQueueFamilyProperties();
 
     for(size_t i = 0U; i < queue_families.size(); ++i) {
@@ -244,12 +259,32 @@ queue_family_indices graphics_device::find_queue_families(const vk::PhysicalDevi
     return queue_family_indices {std::nullopt, std::nullopt};
 }
 
-swapchain_support_details graphics_device::query_swapchain_support(const vk::PhysicalDevice& device,
-                                                                   const vk::SurfaceKHR& surface) {
+vk::Format gpu::find_supported_format(const std::vector<vk::Format>& candidates,
+                                      const vk::ImageTiling tiling,
+                                      const vk::FormatFeatureFlags features) const {
+    for(const auto format: candidates) {
+        const vk::FormatProperties properties = physical_device_.getFormatProperties(format);
+
+        if((tiling == vk::ImageTiling::eLinear)
+           && ((properties.linearTilingFeatures & features) == features))
+            return format;
+        if((tiling == vk::ImageTiling::eOptimal)
+           && (properties.optimalTilingFeatures & features) == features)
+            return format;
+    }
+
+    throw std::runtime_error("Failed to find supported format");
+}
+
+swapchain_support_details gpu::query_swapchain_support() {
+    return query_swapchain_support(physical_device_);
+}
+
+swapchain_support_details gpu::query_swapchain_support(vk::raii::PhysicalDevice& device) {
     return swapchain_support_details {.surface_capabilities =
-                                          device.getSurfaceCapabilitiesKHR(surface),
-                                      .surface_formats = device.getSurfaceFormatsKHR(surface),
-                                      .present_modes = device.getSurfacePresentModesKHR(surface)};
+                                          device.getSurfaceCapabilitiesKHR(surface_),
+                                      .surface_formats = device.getSurfaceFormatsKHR(surface_),
+                                      .present_modes = device.getSurfacePresentModesKHR(surface_)};
 }
 
 }

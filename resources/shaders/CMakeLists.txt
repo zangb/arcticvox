@@ -16,7 +16,7 @@ foreach(SHADER ${SHADER_LIST})
     list(APPEND COMPILED_SHADERS ${COMPILED_SHADER})
 endforeach(SHADER)
 
-add_custom_target("Shaders"
+add_custom_target("shaders"
     DEPENDS ${COMPILED_SHADERS}
     COMMENT "Compiling Shaders"
 )

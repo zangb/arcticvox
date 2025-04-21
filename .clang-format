@@ -40,7 +40,7 @@ IncludeCategories:
     Priority:        -5
   - Regex:           '^((<|")(vulkan)\/)'
     Priority:        -4
-  - Regex:           '^((<|")(GLFW|doctest|spdlog|simdjson|glm)\/)'
+  - Regex:           '^((<|")(assimp|GLFW|doctest|spdlog|simdjson|glm)\/)'
     Priority:        -3
   - Regex:           '^((<|")(arcticvox)\/)'
     Priority:        -2

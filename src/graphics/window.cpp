@@ -5,9 +5,8 @@
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_raii.hpp>
 
-#include <vulkan/vulkan_structs.hpp>
-
 #include <GLFW/glfw3.h>
+#include <spdlog/spdlog.h>
 
 #include "arcticvox/graphics/window.hpp"
 #include "arcticvox/io/cursor.hpp"
@@ -19,9 +18,7 @@ window::window(const size_t width, const size_t height, std::string_view name) :
     width_(width),
     height_(height),
     glfw_(init_glfw_window(width, height, name)),
-    cursor_(glfw_) {
-    glfwSetWindowUserPointer(glfw_, this);
-}
+    cursor_(glfw_) { }
 
 window::~window() {
     glfwDestroyWindow(glfw_);
@@ -64,6 +61,10 @@ bool window::was_resized() const {
     return was_resized_flag_;
 }
 
+void window::glfw_error_cb(int error_code, const char* description) {
+    spdlog::error("GLFW: ERR {}: {}", error_code, description);
+}
+
 void window::framebuffer_resize_cb(GLFWwindow* window, int width, int height) {
     auto* w = reinterpret_cast<::arcticvox::graphics::window*>(glfwGetWindowUserPointer(window));
     w->width_ = width;
@@ -73,13 +74,14 @@ void window::framebuffer_resize_cb(GLFWwindow* window, int width, int height) {
 
 GLFWwindow* window::init_glfw_window(
     const size_t width, const size_t height, std::string_view name) {
+    glfwSetErrorCallback(glfw_error_cb);
     glfwInit();
-
     // GLFW_NO_API prevents the setup of an OpenGL context
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     GLFWwindow* w = glfwCreateWindow(width_, height_, name_.c_str(), nullptr, nullptr);
     glfwSetFramebufferSizeCallback(w, framebuffer_resize_cb);
+    glfwSetWindowUserPointer(w, this);
     return w;
 }
 
